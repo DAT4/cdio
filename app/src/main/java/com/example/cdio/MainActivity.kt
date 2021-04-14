@@ -2,7 +2,6 @@ package com.example.cdio
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -18,9 +17,12 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.cdio.databinding.ActivityMainBinding
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -62,6 +64,20 @@ class MainActivity : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
+    private fun smth(){}
+
+    private fun startMVVM() {
+        lifecycleScope.launchWhenCreated{
+            viewModel.card.collect { response ->
+                when (response) {
+                    is Resource.Success -> smth()
+                    is Resource.Error -> smth()
+                    is Resource.Loading -> smth()
+                }
+            }
+        }
+    }
+
     private fun takePhoto() {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
@@ -90,12 +106,19 @@ class MainActivity : AppCompatActivity() {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val savedUri = Uri.fromFile(photoFile)
                     currentPhotoPath = savedUri.path as String
-                    Picasso.get().load(File(currentPhotoPath)).into(binding.imageShow)
+                    sendImage()
                     val msg = "Photo capture succeeded: $savedUri"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
                 }
             })
+    }
+
+    private fun sendImage(){
+        val file = File(currentPhotoPath)
+        Picasso.get().load(file).into(binding.imageShow)
+
+
     }
 
 
@@ -167,6 +190,7 @@ class MainActivity : AppCompatActivity() {
         requestCode: Int, permissions: Array<String>, grantResults:
         IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
                 startCamera()
