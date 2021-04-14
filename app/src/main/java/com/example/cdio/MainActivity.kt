@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        startMVVM()
 
         // Request camera permissions
         if (allPermissionsGranted()) {
@@ -64,15 +65,17 @@ class MainActivity : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
-    private fun smth() {}
+    private fun smth(hej: String) {
+        Toast.makeText(this, hej, Toast.LENGTH_LONG).show()
+    }
 
     private fun startMVVM() {
         lifecycleScope.launchWhenCreated {
             viewModel.card.collect { response ->
                 when (response) {
-                    is Resource.Success -> smth()
-                    is Resource.Error -> smth()
-                    is Resource.Loading -> smth()
+                    is Resource.Success -> smth(response!!.data!!)
+                    is Resource.Error -> smth("error")
+                    is Resource.Loading -> smth("loading")
                 }
             }
         }

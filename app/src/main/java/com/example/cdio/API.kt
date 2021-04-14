@@ -8,9 +8,9 @@ import retrofit2.http.Part
 
 interface API {
     @Multipart
-    @POST("image")
+    @POST("/")
     suspend fun sendImage(
         @Part image: MultipartBody.Part
-    ) : Response<Card>
+    ) : Response<String>
 
 }

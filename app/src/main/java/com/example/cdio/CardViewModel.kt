@@ -10,8 +10,8 @@ import okhttp3.MultipartBody
 
 open class CardViewModel() : ViewModel() {
     private val repository = Repository()
-    private val _card = MutableStateFlow<Resource<Card>>(Resource.Loading())
-    val card: StateFlow<Resource<Card>> = _card
+    private val _card = MutableStateFlow<Resource<String>>(Resource.Loading())
+    val card: StateFlow<Resource<String>> = _card
 
     fun getCard(image: MultipartBody.Part) = viewModelScope.launch {
         _card.value = Resource.Loading()
