@@ -23,6 +23,12 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.http.Multipart
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -64,10 +70,10 @@ class MainActivity : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
-    private fun smth(){}
+    private fun smth() {}
 
     private fun startMVVM() {
-        lifecycleScope.launchWhenCreated{
+        lifecycleScope.launchWhenCreated {
             viewModel.card.collect { response ->
                 when (response) {
                     is Resource.Success -> smth()
@@ -106,7 +112,8 @@ class MainActivity : AppCompatActivity() {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val savedUri = Uri.fromFile(photoFile)
                     currentPhotoPath = savedUri.path as String
-                    sendImage()
+                    showImage()
+                    //sendImage()
                     val msg = "Photo capture succeeded: $savedUri"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
@@ -114,11 +121,17 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
-    private fun sendImage(){
+    private fun showImage(){
+        Picasso.get().load(File(currentPhotoPath)).into(binding.imageShow)
+    }
+
+    private fun sendImage() {
         val file = File(currentPhotoPath)
-        Picasso.get().load(file).into(binding.imageShow)
-
-
+        val body = MultipartBody.Part.createFormData(
+            "image", file.name,
+            file.asRequestBody()
+        )
+        viewModel.getCard(body)
     }
 
 
